@@ -1,23 +1,25 @@
 import re
 from pycipher import Caesar
-from ngram_score import ngram_score
+from ngram_score import NgramScore
+import argparse
 
-fitness = ngram_score('quadgrams.txt')  # load our quadgram statistics
+fitness = NgramScore('quadgrams.txt')  # load our quadgram statistics
+sample_ctext = 'YMJHFJXFWHNUMJWNXTSJTKYMJJFWQNJXYPSTBSFSIXNRUQJXYHNUMJWX'
 
 
 def break_caesar(ctext):
-    # make sure ciphertext has all spacing/punc removed and is uppercase
     ctext = re.sub('[^A-Z]', '', ctext.upper())
     # try all possible keys, return the one with the highest fitness
     scores = []
     for i in range(26):
         scores.append((fitness.score(Caesar(i).decipher(ctext)), i))
-    return max(scores)
+    max_key = max(scores)
+    return max_key[1], Caesar(max_key[1]).decipher(ctext)
 
 
-# example ciphertext
-ctext = 'YMJHFJXFWHNUMJWNXTSJTKYMJJFWQNJXYPSTBSFSIXNRUQJXYHNUMJWX'
-max_key = break_caesar(ctext)
-
-print('best candidate with key (a,b) = ' + str(max_key[1]) + ':')
-print(Caesar(max_key[1]).decipher(ctext))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ctext', nargs='?', default=sample_ctext, type=str, help='Enciphered text')
+    args = parser.parse_args()
+    key, text = break_caesar(args.ctext)
+    print('best candidate with key (a,b) = ' + str(key) + ':' + text)

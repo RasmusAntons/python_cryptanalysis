@@ -1,13 +1,20 @@
-# this code breaks 3by3 hill ciphers fairly efficiently. 
+""" this code breaks 3by3 hill ciphers fairly efficiently. """
 
 from itertools import product
-import sys
-from ngram_score import ngram_score
+from ngram_score import NgramScore
+import re
+from nbest import NBest
+import argparse
 
 L2I = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", range(26)))
 I2L = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-preamble = sys.argv[1]
-ctext = sys.argv[2]
+mono = NgramScore('monograms.txt')
+bi = NgramScore('bigrams.txt')
+quad = NgramScore('quadgrams.txt')
+# this is the second feynman cipher, no known decryption
+sample_ctext = 'XUKEXWSLZJUAXUNKIGWFSOZRAWURORKXAOSLHROBXBTKCMUWDVPTFBLMKEFVWMUXTVTWUIDDJVZKBRMCWOIWYDXMLUFPVSHAGSVWU' \
+               'FWORCWUIDUJCNVTTBERTUNOJUZHVTWKORSVRZSVVFSQXOCMUWPYTRLGBMCYPOJCLRIYTVFCCMUWUFPOXCNMCIWMSKPXEDLYIQKDJW' \
+               'IWCJUMVRCJUMVRKXWURKPSEEIWZVXULEIOETOOFWKBIUXPXUGOWLFPWUSCH'
 
 
 def hill3decipher(ctext, key):
@@ -23,84 +30,57 @@ def hill3decipher(ctext, key):
     return ptext
 
 
-# keep a list of the N best things we have seen, discard anything else
-# the list may be greater than N, and unsorted. Call finalise() before accessing
-# to guarantee correct length and sorted order.
-class nbest(object):
-    def __init__(self, N=1000):
-        self.store = []
-        self.N = N
+def break_hill3(ctext, N=20):
+    ctext = re.sub('[^A-Z]', '', ctext.upper())
 
-    def add(self, item):
-        self.store.append(item)
-        if len(self.store): self.finalise()
-
-    def finalise(self):
-        self.store.sort(reverse=True)
-        self.store = self.store[:self.N]
-
-    def __getitem__(self, k):
-        return self.store[k]
-
-    def __len__(self):
-        return len(self.store)
-
-
-import re
-
-# this is the second feynman cipher, no known decryption
-ctext = 'XUKEXWSLZJUAXUNKIGWFSOZRAWURORKXAOSLHROBXBTKCMUWDVPTFBLMKEFVWMUXTVTWUIDDJVZKBRMCWOIWYDXMLUFPVSHAGSVWUFWORCWUIDUJCNVTTBERTUNOJUZHVTWKORSVRZSVVFSQXOCMUWPYTRLGBMCYPOJCLRIYTVFCCMUWUFPOXCNMCIWMSKPXEDLYIQKDJWIWCJUMVRCJUMVRKXWURKPSEEIWZVXULEIOETOOFWKBIUXPXUGOWLFPWUSCH'
-ctext = re.sub('[^A-Z]', '', ctext.upper())
-
-mono = ngram_score('monograms.txt')
-bi = ngram_score('bigrams.txt')
-quad = ngram_score('quadgrams.txt')
-
-N = 20
-rec = nbest(N)
-for seq in product(range(26), repeat=3):
-    if seq[0] % 2 == 0 and seq[1] % 2 == 0 and seq[2] % 2 == 0:
-        continue
-    if seq[0] % 13 == 0 and seq[1] % 13 == 0 and seq[2] % 13 == 0:
-        continue
-    seq2 = (seq[0], seq[1], seq[2], 1, 1, 1, 1, 1, 1)
-    txt = hill3decipher(ctext, seq2)
-    score = 0
-    for i in range(0, len(txt), 3):
-        score += mono.score(txt[i])
-    rec.add((score, seq2))
-
-rec.finalise()
-rec2 = nbest(N)
-for j in range(N):
+    rec = NBest(N)
     for seq in product(range(26), repeat=3):
         if seq[0] % 2 == 0 and seq[1] % 2 == 0 and seq[2] % 2 == 0:
             continue
         if seq[0] % 13 == 0 and seq[1] % 13 == 0 and seq[2] % 13 == 0:
             continue
-        seq2 = (rec[j][1][0], rec[j][1][1], rec[j][1][2], seq[0], seq[1], seq[2], 1, 1, 1)
+        seq2 = (seq[0], seq[1], seq[2], 1, 1, 1, 1, 1, 1)
         txt = hill3decipher(ctext, seq2)
         score = 0
         for i in range(0, len(txt), 3):
-            score += bi.score(txt[i:i + 2])
-        rec2.add((score, seq2))
+            score += mono.score(txt[i])
+        rec.add((score, seq2))
 
-rec2.finalise()
-rec3 = nbest(N)
-for j in range(N):
-    for seq in product(range(26), repeat=3):
-        seq2 = (
-        rec2[j][1][0], rec2[j][1][1], rec2[j][1][2], rec2[j][1][3], rec2[j][1][4], rec2[j][1][5], seq[0], seq[1],
-        seq[2])
-        da = (seq2[0] * seq2[4] * seq2[8] + seq2[1] * seq2[5] * seq2[6] + seq2[2] * seq2[3] * seq2[7]) - (
-                    seq2[2] * seq2[4] * seq2[6] + seq2[1] * seq2[3] * seq2[8] + seq2[0] * seq2[5] * seq2[7])
-        if da % 2 == 0 or da % 13 == 0:
-            continue
-        txt = hill3decipher(ctext, seq2)
-        score = quad.score(txt)
-        rec3.add((score, seq2))
+    rec2 = NBest(N)
+    for j in range(N):
+        for seq in product(range(26), repeat=3):
+            if seq[0] % 2 == 0 and seq[1] % 2 == 0 and seq[2] % 2 == 0:
+                continue
+            if seq[0] % 13 == 0 and seq[1] % 13 == 0 and seq[2] % 13 == 0:
+                continue
+            seq2 = (rec[j][1][0], rec[j][1][1], rec[j][1][2], seq[0], seq[1], seq[2], 1, 1, 1)
+            txt = hill3decipher(ctext, seq2)
+            score = 0
+            for i in range(0, len(txt), 3):
+                score += bi.score(txt[i:i + 2])
+            rec2.add((score, seq2))
 
-rec3.finalise()
-for j in range(10):
-    print(rec3[j], preamble, hill3decipher(ctext, rec3[j][1]))
-    sys.stdout.flush()
+    rec3 = NBest(N)
+    for j in range(N):
+        for seq in product(range(26), repeat=3):
+            seq2 = (
+            rec2[j][1][0], rec2[j][1][1], rec2[j][1][2], rec2[j][1][3], rec2[j][1][4], rec2[j][1][5], seq[0], seq[1],
+            seq[2])
+            da = (seq2[0] * seq2[4] * seq2[8] + seq2[1] * seq2[5] * seq2[6] + seq2[2] * seq2[3] * seq2[7]) - (
+                        seq2[2] * seq2[4] * seq2[6] + seq2[1] * seq2[3] * seq2[8] + seq2[0] * seq2[5] * seq2[7])
+            if da % 2 == 0 or da % 13 == 0:
+                continue
+            txt = hill3decipher(ctext, seq2)
+            score = quad.score(txt)
+            rec3.add((score, seq2))
+
+    for j in range(10):
+        print(rec3[j], hill3decipher(ctext, rec3[j][1]), flush=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ctext', nargs='?', default=sample_ctext, type=str, help='Enciphered text')
+    parser.add_argument('-N', type=int, default=100, help='Number of results to keep from each round')
+    args = parser.parse_args()
+    break_hill3(args.ctext, args.N)

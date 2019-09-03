@@ -5,7 +5,7 @@ Allows scoring of text using n-gram probabilities
 from math import log10
 
 
-class ngram_score(object):
+class NgramScore(object):
     __cache = {}
 
     def __init__(self, ngramfile, sep=' '):
@@ -15,8 +15,8 @@ class ngram_score(object):
         self.ngrams = None
 
     def load(self):
-        if self.ngramfile in ngram_score.__cache:
-            self.ngrams = ngram_score.__cache[self.ngramfile]
+        if self.ngramfile in NgramScore.__cache:
+            self.ngrams = NgramScore.__cache[self.ngramfile]
         else:
             self.ngrams = {}
             for line in open(self.ngramfile):
@@ -28,7 +28,7 @@ class ngram_score(object):
             for key in self.ngrams.keys():
                 self.ngrams[key] = log10(self.ngrams[key] / self.N)
             self.floor = log10(0.01 / self.N)
-            ngram_score.__cache[self.ngramfile] = self.ngrams
+            NgramScore.__cache[self.ngramfile] = self.ngrams
 
     def score(self, text):
         """ compute the score of text """

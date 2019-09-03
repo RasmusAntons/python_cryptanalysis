@@ -1,22 +1,25 @@
-# usage: python break_fracmorse.py 'CIPHERTEXTMESSAGE'
-# ideally you'll want 200 or so characters to reliably decrypt, shorter will often work but not as reliably.
+""" ideally you'll want 200 or so characters to reliably decrypt, shorter will often work but not as reliably. """
 
 import random
 import re
-import sys
 from pycipher import FracMorse
-from ngram_score import ngram_score
+from ngram_score import NgramScore
+import argparse
 
-# ctext = FracMorse('PQRSTUVWXYZABCDEFGHIJKLMNO').encipher("He has not been returned to sea because of his affection for caregivers.The waitress pointed to the lunch menu, but the oldest living ex-major leaguer had no use for it")
-fitness = ngram_score('fmorse_quadgrams.txt')  # load our quadgram model
+#sample_ctext = FracMorse('PQRSTUVWXYZABCDEFGHIJKLMNO').encipher("He has not been returned to sea because of his affection for caregivers.The waitress pointed to the lunch menu, but the oldest living ex-major leaguer had no use for it")
+sample_ctext = "pvnpihxacmkrvknawheaawrmcnrvgyvkauqhvodqxpvvrihaqvkaewdahacixzveawarpeivrszmpvndureavrpnblewwjyolgepj" \
+               "irqkkapxdwvubtophfohrxciryjpmirrpewwajyfpudutfdsnyjubheixpvfrklgqhvnsleahm"
+fitness = NgramScore('fmorse_quadgrams.txt')  # load our quadgram model
 
 
-# helper function, converts an integer 0-25 into a character
-def i2a(i): return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i % 26]
+#
+def i2a(i):
+    """ helper function, converts an integer 0-25 into a character """
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i % 26]
 
 
-# decipher a piece of text using the substitution cipher and a certain key
 def sub_decipher(text, key):
+    """ decipher a piece of text using the substitution cipher and a certain key """
     invkey = [i2a(key.index(i)) for i in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
     ret = ''
     for c in text:
@@ -27,12 +30,13 @@ def sub_decipher(text, key):
     return ret
 
 
-# This code is just the simple substitution cipher cracking code, it works perfectly for fractionated morse as
-# long as you use fractioned morse statistics instead of english statistics.
 def break_simplesub(ctext, startkey=None):
-    ''' perform hill-climbing with a single start. This function may have to be called many times
-        to break a substitution cipher. '''
-    # make sure ciphertext has all spacing/punc removed and is uppercase
+    """
+    This code is just the simple substitution cipher cracking code, it works perfectly for fractionated morse as
+    long as you use fractioned morse statistics instead of english statistics.
+    Perform hill-climbing with a single start. This function may have to be called many times
+    to break a substitution cipher.
+    """
     ctext = re.sub('[^A-Z]', '', ctext.upper())
     parentkey, parentscore = startkey or list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), -99e99
     if not startkey: random.shuffle(parentkey)
@@ -53,12 +57,19 @@ def break_simplesub(ctext, startkey=None):
     return parentscore, parentkey
 
 
-ctext = sys.argv[1]
-ctext = re.sub(r'[^A-Z ]', '', ctext.upper())
-maxscore, maxkey = break_simplesub(ctext, list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-print(str(maxscore), 'FractionatedMorse key:', ''.join(maxkey), 'decrypt: ', FracMorse(maxkey).decipher(ctext))
-for i in range(1000):
-    score, key = break_simplesub(ctext)
-    if score > maxscore:
-        maxscore, maxkey = score, key[:]
-        print(str(maxscore), 'FractionatedMorse key:', ''.join(maxkey), 'decrypt: ', FracMorse(maxkey).decipher(ctext))
+def break_fracmorse(ctext):
+    ctext = re.sub(r'[^A-Z ]', '', ctext.upper())
+    maxscore, maxkey = break_simplesub(ctext, list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    print(str(maxscore), 'FractionatedMorse key:', ''.join(maxkey), 'decrypt: ', FracMorse(maxkey).decipher(ctext))
+    for i in range(1000):
+        score, key = break_simplesub(ctext)
+        if score > maxscore:
+            maxscore, maxkey = score, key[:]
+            print(str(maxscore), 'FractionatedMorse key:', ''.join(maxkey), 'decrypt: ', FracMorse(maxkey).decipher(ctext))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ctext', nargs='?', default=sample_ctext, type=str, help='Enciphered text')
+    args = parser.parse_args()
+    break_fracmorse(args.ctext)
