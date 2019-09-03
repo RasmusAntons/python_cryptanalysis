@@ -62,10 +62,10 @@ for seq in product(range(26),repeat=4):
         score += mono.score(txt[i])
     rec.add((score,seq2,(seq[3],0,0)))   
 rec.finalise()
-print 'stage 1 complete...'
+print('stage 1 complete...')
 rec2 = nbest(N)
 for j in range(N):
-  print j,
+  print(j)
   sys.stdout.flush()
   for seq in product(range(26),repeat=4):
     if seq[0]%2 == 0 and seq[1]%2 == 0 and seq[2]%2 == 0:
@@ -78,11 +78,11 @@ for j in range(N):
     for i in range(0,len(txt),3):
         score += bi.score(txt[i:i+2])
     rec2.add((score,seq2,(rec[j][2][0],seq[3],0)))   
-print 'stage 2 complete.'
+print('stage 2 complete.')
 rec2.finalise()
 rec3 = nbest(N)
 for j in range(N):
-    print j,
+    print(j)
     sys.stdout.flush()
     for seq in product(range(26),repeat=4):
         seq2 = (rec2[j][1][0],rec2[j][1][1],rec2[j][1][2],rec2[j][1][3],rec2[j][1][4],rec2[j][1][5],seq[0],seq[1],seq[2])
@@ -100,9 +100,9 @@ for j in range(N):
             rec3.add((score,seq2,(seq[3],rec2[j][2][0],rec2[j][2][1]))) 
         
 rec3.finalise()
-print 'stage 3 complete.'
+print('stage 3 complete.')
 
 for j in range(10):
-    print rec3[j], hill3decipher(ctext,rec3[j][1],rec3[j][2])
+    print(rec3[j], hill3decipher(ctext,rec3[j][1],rec3[j][2]))
 
 

@@ -16,5 +16,5 @@ def break_caesar(ctext):
 ctext = 'YMJHFJXFWHNUMJWNXTSJTKYMJJFWQNJXYPSTBSFSIXNRUQJXYHNUMJWX'
 max_key = break_caesar(ctext)
 
-print 'best candidate with key (a,b) = '+str(max_key[1])+':'
-print Caesar(max_key[1]).decipher(ctext)
+print('best candidate with key (a,b) = '+str(max_key[1])+':')
+print(Caesar(max_key[1]).decipher(ctext))

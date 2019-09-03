@@ -10,8 +10,8 @@ ctext = re.sub('[^A-Z]','',ctext.upper())
 maxkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 maxscore = -99e9
 parentscore,parentkey = maxscore,maxkey[:]
-print "Substitution Cipher solver, you may have to wait several iterations"
-print "for the correct result. Press ctrl+c to exit program."
+print("Substitution Cipher solver, you may have to wait several iterations")
+print("for the correct result. Press ctrl+c to exit program.")
 # keep going until we are killed by the user
 i = 0
 while 1:
@@ -37,9 +37,9 @@ while 1:
     # keep track of best score seen so far
     if parentscore>maxscore:
         maxscore,maxkey = parentscore,parentkey[:]
-        print '\nbest score so far:',maxscore,'on iteration',i
+        print('\nbest score so far:',maxscore,'on iteration',i)
         ss = SimpleSub(maxkey)
-        print '    best key: '+''.join(maxkey)
-        print '    plaintext: '+ss.decipher(ctext)
+        print('    best key: '+''.join(maxkey))
+        print('    plaintext: '+ss.decipher(ctext))
 
 

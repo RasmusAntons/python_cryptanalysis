@@ -40,7 +40,7 @@ for KLEN in range(3,20):
 
     next_rec = nbest(N)
     for i in range(0,KLEN-3):
-        for k in xrange(N):
+        for k in range(N):
             for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
                 key = rec[k][1] + c
                 fullkey = key + 'A'*(KLEN-len(key))
@@ -60,6 +60,6 @@ for KLEN in range(3,20):
         if score > bestscore:
             bestkey = rec[i][1]
             bestscore = score       
-    print bestscore,'Vigenere, klen',KLEN,':"'+bestkey+'",',Vigenere(bestkey).decipher(ctext)
+    print(bestscore,'Vigenere, klen',KLEN,':"'+bestkey+'",',Vigenere(bestkey).decipher(ctext))
     
 

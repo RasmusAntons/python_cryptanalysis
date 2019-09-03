@@ -17,5 +17,5 @@ def break_affine(ctext):
 ctext = 'QUVNLAUVILZKVZZZVNHIVQUFSFZHWZQLQHQLJSNLAUVI'
 max_key = break_affine(ctext)
 
-print 'best candidate with key (a,b) = '+str(max_key[1])+':'
-print Affine(max_key[1][0],max_key[1][1]).decipher(ctext)
+print('best candidate with key (a,b) = '+str(max_key[1])+':')
+print(Affine(max_key[1][0],max_key[1][1]).decipher(ctext))

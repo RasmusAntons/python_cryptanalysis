@@ -50,10 +50,10 @@ def break_simplesub(ctext,startkey=None):
 ctext = sys.argv[1]
 ctext = re.sub(r'[^A-Z ]','',ctext.upper())
 maxscore, maxkey = break_simplesub(ctext,list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-print str(maxscore),'FractionatedMorse key:',''.join(maxkey), 'decrypt: ',FracMorse(maxkey).decipher(ctext)
+print(str(maxscore),'FractionatedMorse key:',''.join(maxkey), 'decrypt: ',FracMorse(maxkey).decipher(ctext))
 for i in range(1000):
     score, key = break_simplesub(ctext)
     if score > maxscore:
         maxscore,maxkey = score,key[:]
-        print str(maxscore),'FractionatedMorse key:',''.join(maxkey), 'decrypt: ',FracMorse(maxkey).decipher(ctext)
+        print(str(maxscore),'FractionatedMorse key:',''.join(maxkey), 'decrypt: ',FracMorse(maxkey).decipher(ctext))
 

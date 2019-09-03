@@ -95,6 +95,6 @@ for j in range(N):
 
 rec3.finalise()
 for j in range(10):
-    print rec3[j],preamble, hill3decipher(ctext,rec3[j][1])
+    print(rec3[j],preamble, hill3decipher(ctext,rec3[j][1]))
     sys.stdout.flush()
 
